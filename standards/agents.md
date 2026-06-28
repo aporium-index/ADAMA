@@ -19,6 +19,11 @@
 2. Append to `sisko/sessions/YYYY-MM-DD.md` with what was done.
 3. If priorities shifted, update `sisko/dashboard.md`.
 
+## Visibility Rule
+- **Before any operation expected to take more than 5 seconds** (broad grep, large diff, network fetch), say what the operation is and roughly how long.
+- **If the human asks "are you stuck?"**: respond with what operation is in progress, not deflection. Do not say "not stuck" — report the current state.
+- **Check progress signals**: if multiple turns pass without a tool call returning, something is wrong. Say so.
+
 ## Cross-Project Rules
 - Agents work in one project at a time.
 - If work touches multiple projects, note it in the session file so the human can coordinate.
