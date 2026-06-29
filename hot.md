@@ -10,6 +10,10 @@ Chronological change log for the workspace. Newest at top.
 
 ## 2026-06-28
 
+### ADAMA — Agent behavior rules added
+- standards/agents.md: new "Backlog Hygiene" section — mark done immediately, never suggest already-taken actions, end every message with suggestions
+- Triggered by agent suggesting actions that were already completed in a prior commit (items left as `[ ]` instead of `[x]`)
+
 ### ADAMA — Status field collision resolved
 - OKF `status` (active|draft|archived) renamed to `publication_status` in standards/okf.md
 - Outpost lifecycle `status` (dormant|decommissioned|destroyed) unchanged

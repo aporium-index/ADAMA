@@ -27,6 +27,11 @@ timestamp: 2026-06-28
 ## Top-Three Backlog Rule
 The `## Full Backlog` section (per `outpost-state.md` template) holds all next actions in priority order. The **top three** items are the outpost's immediate focus — the three that unblock the most downstream work. If there are more than three candidates, pick three and demote the rest below a visible separator. If there are fewer than three candidates, the outpost is idle or needs direction — flag it in `## Open Decisions` or `## Blockers`.
 
+## Backlog Hygiene
+- **Mark done immediately.** When you complete a backlog item, mark it `[x]` in the same commit. Never leave completed work as `[ ]` — it causes duplicate suggestions and makes the outpost look idle.
+- **Never suggest already-taken actions.** Before proposing a next action, verify it isn't already done or in progress. Read the backlog and recent git log before suggesting.
+- **End every message with suggestions.** The human should never have to ask "what's next?" — the agent's final message should surface 1-3 concrete next actions from the backlog, ranked by impact.
+
 ## Git: Always Commit + Push
 After every session, commit all changes and push to remote. No uncommitted work lingers between sessions. No stash-and-forget. If work is incomplete, commit with `WIP:` prefix and push. ADAMA considers `last_active` stale if there's no push within `stale_threshold_days`.
 

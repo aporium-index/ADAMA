@@ -87,6 +87,7 @@ Threshold: when all non-dormant outposts reach `outpost` phase with `condition-g
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-06-28 | Added Backlog Hygiene rule to agents.md | Agent suggested already-completed actions because backlog items weren't marked done in the same commit; also added "end with suggestions" rule |
 | 2026-06-28 | Renamed OKF `status` → `publication_status` | Outpost lifecycle `status` (dormant/decommissioned/destroyed) is established in phase model + dashboard-derivation; OKF's `status` (active/draft/archived) is recommended-only and applies to general markdown files. Renaming OKF's field is zero-churn — no state files or dashboard logic use OKF's status values |
 | 2026-06-28 | Reviewed jamboree init — first outpost run | All claims verified accurate (23 tools, 15 docs, 11 submodules, 2 prunable worktrees); surfaced 3 high-impact template gaps now in backlog |
 | 2026-06-28 | Connected sisko opencode chats to ADAMA | Updated project.worktree + 6 session.directory paths in opencode.db from /sisko to /ADAMA; project_directory was already migrated |
