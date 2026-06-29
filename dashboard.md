@@ -8,36 +8,34 @@ timestamp: 2026-06-28
 
 > Derived from `outposts/*.md` symlinks. Rebuilt 2026-06-28.
 
-## Active Outposts
+## Phase Pipeline
 
-| Outpost | State | Condition | Priority | Tier | Last Active | Focus |
+```
+brief ──► survey ──► outpost
+(idea)    (evaluate)   (build)
+```
+
+| Phase | Outposts |
+|-------|----------|
+| outpost | ADAMA |
+| survey | Aporium, basicly, jamboree, quotaz, prosodymaker |
+| brief | — |
+| dormant | mac-optimization-audit, ml-feedback-program |
+
+## All Outposts
+
+| Outpost | Phase | Condition | Priority | Tier | Last Active | Description |
 |---|---|---|---|---|---|---|
-| [[outposts/ADAMA-state\|ADAMA]] | operational | condition-green | P1 | tier-0 | 2026-06-28 | Architecture consolidation: symlink-based tracking, derived dashboard |
-| [[outposts/_aporium-state\|Aporium]] | operational | condition-green | P1 | tier-1 | 2026-06-28 | ADAMA bootstrap — defining control plane standards |
-| [[outposts/basicly-state\|basicly]] | operational | condition-green | P2 | tier-2 | 2026-06-28 | Transitioning from spike to implementation |
-| [[outposts/jamboree-state\|jamboree]] | operational | condition-green | P2 | tier-2 | 2026-06-28 | Local audio pipeline integration |
-| [[outposts/quotaz-state\|quotaz]] | operational | condition-green | P3 | tier-2 | 2026-06-28 | Pipeline automation active |
-| [[outposts/prosodymaker-state\|prosodymaker]] | operational | condition-green | P3 | tier-3 | 2026-06-28 | Tracker/logs-based iteration (v0.55.0) |
+| [[outposts/ADAMA-state\|ADAMA]] | outpost | condition-green | P1 | tier-0 | 2026-06-28 | Control plane for the workspace |
+| [[outposts/_aporium-state\|Aporium]] | survey | condition-green | P1 | tier-1 | 2026-06-28 | Personal knowledge base — AI, psychology, meaning-making |
+| [[outposts/basicly-state\|basicly]] | survey | condition-green | P2 | tier-2 | 2026-06-28 | macOS language assistant — spelling, grammar, vocabulary signals |
+| [[outposts/jamboree-state\|jamboree]] | survey | condition-green | P2 | tier-2 | 2026-06-28 | Audio suite — Ableton Live 12, Python, local audio pipeline |
+| [[outposts/quotaz-state\|quotaz]] | survey | condition-green | P3 | tier-2 | 2026-06-28 | AI model eval toolkit — compare free-tier models |
+| [[outposts/prosodymaker-state\|prosodymaker]] | survey | condition-green | P3 | tier-3 | 2026-06-28 | Chain-of-thought song maker — tracker/logs-based dev |
+| [[outposts/mac-optimization-audit-state\|mac-optimization-audit]] | dormant | — | P4 | tier-3 | 2026-06-20 | Mac optimization reference docs |
+| [[outposts/ml-feedback-program-state\|ml-feedback-program]] | dormant | — | P4 | tier-3 | 2026-06-26 | ML feedback — unknown stack, needs discovery |
 
-## Maintenance / Dormant
-
-| Outpost | State | Condition | Priority | Tier | Last Active | Focus |
-|---|---|---|---|---|---|---|
-| [[outposts/ml-feedback-program-state\|ml-feedback-program]] | dormant | — | P4 | tier-3 | 2026-06-26 | Dormant — needs discovery |
-| [[outposts/mac-optimization-audit-state\|mac-optimization-audit]] | dormant | — | P4 | tier-3 | 2026-06-20 | Reference documentation only |
-
-## Blockers
-
-*None.*
-
-## Control Plane Health
-
-- Outposts: 8 total (6 operational, 2 dormant)
-- Condition: 6 green, 0 yellow, 0 red, 0 adrift
-- Compliance: 11/16 (see below)
-- Standards: 5 files (agents, git, okf, outpost-state, dashboard-derivation)
-
-### Compliance
+## Compliance
 
 | Outpost | AGENTS.md | .gitignore |
 |---|---|---|
@@ -50,12 +48,11 @@ timestamp: 2026-06-28
 | mac-optimization-audit | ✗ | ✗ |
 | ml-feedback-program | ✗ | ✗ |
 
-## Recent Activity
+## Control Plane Health
 
-Outposts active in past 7 days:
-- **ADAMA**, **Aporium**, **basicly**, **jamboree**, **quotaz**, **prosodymaker** — 2026-06-28
-- **ml-feedback-program** — 2026-06-26
-- **mac-optimization-audit** — 2026-06-20
+- Outposts: 8 (1 outpost, 5 survey, 2 dormant)
+- Condition: 6 green, 0 yellow, 0 red, 0 adrift
+- Compliance: 11/16
 
 ---
 *To verify: read all `outposts/*.md` frontmatter and recompute.*

@@ -6,67 +6,96 @@ timestamp: 2026-06-28
 
 # Standard: Outpost State File
 
-Every repo in the workspace carries a single status file: `_<slug>-state.md`. No other status files. No PROJECT.md. No README-as-status. This file is the outpost's interface to ADAMA.
-
-Sisko's `outposts/` directory contains symlinks pointing to each repo's state file. The dashboard is derived from these symlinks — never hand-maintained.
+Every repo carries one status file: `<slug>-state.md`. ADAMA's `outposts/` directory contains symlinks to each. The dashboard reads these files — never hand-maintained.
 
 ## Who Writes What
 
 | Field group | Writer | When |
 |---|---|---|
-| Identity, description, location | Human or commissioning agent | Once, at setup |
-| Stack, repo, standards compliance | Agent (repo-level) | At setup, then on change |
-| Current focus, next actions, decisions | Agent or human | After every working session |
-| State, condition, priority, criticality, owner | **ADAMA** (or human) | During check-in only |
-| Last active, last checkin, timestamp | Automated (agent or tooling) | On every write |
+| Identity, description, location, stack | Outpost agent or human | At init, then on change |
+| Compliance fields | Outpost agent | Re-checked on every session end |
+| Phase, condition, priority, criticality, owner | **ADAMA** (or human) | During check-in only |
+| Temporal fields | Automated | On every write |
 
-Repo-level agents do NOT set `state`, `condition`, or `priority`. They report issues in `## Blockers`. ADAMA assigns condition during check-in.
+Outpost agents do NOT set `phase`, `condition`, `priority`, or `criticality`. They report issues in `## Blockers`. ADAMA assigns these during check-in.
 
-## File Naming
+## Phases (lifecycle pipeline)
 
 ```
-_<slug>-state.md
+brief ──► survey ──► outpost
+(idea)    (evaluate)   (build)
 ```
 
-Lowercase. Underscore prefix matches repo directory convention (`_aporium/`). `-state` suffix distinguishes from other repo files.
+| Phase | Meaning |
+|-------|---------|
+| `brief` | Idea stage. Light investigation. No commitment to build. May not have a repo yet. |
+| `survey` | Evaluating. Gathering requirements, validating feasibility. May have initial work but no committed roadmap. |
+| `outpost` | Building. Committed, active development, clear direction. |
 
-Examples:
-- `_aporium-state.md`
-- `_basicly-state.md`
-- `_ADAMA-state.md`
+Phases are forward-only until a deliberate decision to move back. An outpost in `brief` graduates to `survey` when someone commits to evaluating it. An outpost in `survey` graduates to `outpost` when development begins in earnest.
+
+Terminal statuses — an outpost leaves the active pipeline:
+
+| Status | Meaning |
+|--------|---------|
+| `dormant` | Paused. Can be reactivated. Preserves state. |
+| `decommissioned` | Retired. Preserved for reference. |
+| `destroyed` | Deleted permanently. |
+
+An outpost in any phase can move to `dormant`. Only decommissioned/destroyed are final.
+
+## Condition (health)
+
+Cuts across all phases and statuses:
+
+| Condition | Meaning |
+|-----------|---------|
+| `condition-green` | Everything nominal |
+| `yellow-alert` | Degraded — issues detected, still functional |
+| `red-alert` | Critical — immediate intervention needed |
+| `adrift` | Unresponsive — no contact, manual recovery |
+
+Condition is null when status is terminal (dormant/decommissioned/destroyed).
 
 ## Template
 
 ```markdown
 ---
-# ── Identity (outpost-written at setup, rarely changes) ──
+# ── Identity ──
 slug: _aporium
 name: Aporium
 category: knowledge-base
 domain: ai-psychology
-sensitivity: internal
 
-# ── Stack (outpost-written at setup, updated when stack changes) ──
+# ── Description & Location ──
+description: >
+  Personal knowledge base at the intersection of AI, human psychology,
+  and meaning-making. Built on the Karpathy LLM Wiki pattern.
+location: ~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Aporium
+location_note: iCloud vault — agent dev-state at workspace/_aporium/
+
+# ── Stack ──
 primary_language: markdown
 languages: []
 primary_framework: obsidian
 frameworks: []
 platform: cross-platform
 
-# ── Repository (outpost-written at setup) ──
-repo_url: local
+# ── Repository ──
+repo_url: https://github.com/aporium-index/aporium-vault
 repo_type: bare
-default_branch: main
+default_branch: master
 
-# ── Compliance (outpost-written, re-checked on session end) ──
+# ── Compliance ──
 has_agents_md: true
 has_gitignore: true
 
-# ── Lifecycle (ADAMA-written during check-in) ──
-state: operational
+# ── Lifecycle (ADAMA-written) ──
+phase: survey
+status: null
 condition: condition-green
 
-# ── Priority (ADAMA-written during check-in) ──
+# ── Priority (ADAMA-written) ──
 priority: P1
 criticality: tier-1
 
@@ -74,7 +103,7 @@ criticality: tier-1
 owner: josh
 owner_type: human
 
-# ── Temporal (automated) ──
+# ── Temporal ──
 last_active: 2026-06-28
 last_checkin: 2026-06-28
 timestamp: 2026-06-28
@@ -86,43 +115,22 @@ depended_on_by: []
 
 # ── Meta ──
 tags: [knowledge-base, obsidian, wiki, llm]
-file_version: "1.0"
+file_version: "1.1"
 ---
 
 # {{ name }}
 
-## Description
-
-Personal knowledge base at the intersection of AI, human psychology, and
-meaning-making. Built on the Karpathy LLM Wiki pattern. Obsidian vault
-synced via iCloud.
-
-## Location
-
-`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Aporium`
-
-Dev-state bare repo at `workspace/_aporium/`.
-
 ## Current Focus
 
-OKF frontmatter retrofit on wiki pages. Branch cleanup complete,
-compilation pipeline is stable.
-
-## Next Actions
-
-- [ ] OKF frontmatter retrofit on all wiki pages
-- [ ] Resolve .opencode/node_modules pollution in vault
-- [ ] Ontological preface test protocol
-
-Exactly 3 items. Prioritize gaps found during audit. The full list goes in `## Full Backlog`.
+OKF frontmatter retrofit on wiki pages. Branch cleanup complete.
 
 ## Full Backlog
 
-All next actions discovered, not just the top 3. Priority order. This gives ADAMA a broader view of the outpost's needs beyond the immediate focus.
-
+- [ ] OKF frontmatter retrofit on all 845 wiki pages
+- [ ] Resolve .opencode/node_modules pollution in vault
+- [ ] Ontological preface test protocol
 - [ ] Decide plugin trial sequence
-- [ ] Raw provenance repair wave for Author/Source Provenance gaps
-- [ ] Review compilation pipeline performance
+- [ ] Raw provenance repair wave
 
 ## Blockers
 
@@ -130,25 +138,22 @@ None.
 
 ## Compliance Gaps
 
-Each gap mapped to the specific ADAMA standard it violates. One line per gap, with the fix.
-
-- **No AGENTS.md** (standards/agents.md §1) — create at repo root
-- **.gitignore missing .venv/** (standards/git.md § Repo Structure) — add `.venv/` to .gitignore
+- **No CI pipeline** — no automated validation for wiki files
+- **Wiki files not OKF conformant** — 845 files need frontmatter retrofit
 
 ## Long-Term Direction
 
-Phases, milestones, ambitions beyond current focus. What's the 6-12 month vision? Known inflection points? Thresholds that would change the outpost's state or priority?
-
-Phase 1: OKF frontmatter retrofit across all 845 wiki pages.
+Phase 1: OKF frontmatter retrofit across all wiki pages.
 Phase 2: Compilation pipeline stabilization and agent-driven synthesis.
 Phase 3: Public knowledge graph export.
 
-Key threshold: if the compilation pipeline can reliably produce publication-ready syntheses, priority should increase from P1 to P0 for a production release sprint.
+Threshold: if the compilation pipeline can reliably produce publication-ready
+syntheses, promote to outpost phase with P0 priority for a production release sprint.
 
 ## Open Decisions
 
-- **Obsidian plugin trial sequence**: Omnisearch → Recent Files → Homepage → Style Settings?
-- **First deep research packet**: AI companionship off-ramps vs local AI infrastructure vs creative infrastructure?
+- Obsidian plugin trial sequence: Omnisearch → Recent Files → Homepage → Style Settings?
+- First deep research packet topic?
 
 ## Decisions
 
@@ -159,34 +164,15 @@ Key threshold: if the compilation pipeline can reliably produce publication-read
 
 ## Repo Notes
 
-Special considerations for this repo. Anything an agent working here should know that isn't captured above. Gotchas, unusual setup, conventions that differ from ADAMA defaults.
-
 Aporium lives outside `workspace/` due to iCloud constraints.
-Wikilinks in this file resolve within Aporium's vault context.
-Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for operations.
+Wikilinks resolve within Aporium's vault context, not ADAMA's.
 
 ## Links
 
 - AGENTS.md
 - [[Aporium Wiki|wiki/index.md]]
 - [[Aporium Hot|wiki/hot.md]]
-## Body Section Reference
-
-| Section | Required | Purpose |
-|---------|----------|---------|
-| `# {{ name }}` | yes | Title header |
-| `## Description` | yes | One paragraph: what this outpost is |
-| `## Location` | yes | Path on disk. If not in standard `workspace/<slug>/`, explain why |
-| `## Current Focus` | yes | What's being worked on right now. One sentence |
-| `## Next Actions` | yes | Exactly 3 concrete, completable items. Highest priority |
-| `## Full Backlog` | yes | All next actions, prioritized. Broader view for ADAMA |
-| `## Blockers` | yes | What's stopped and why. "None." if empty |
-| `## Compliance Gaps` | yes | Standards not met, each with fix. "None." if fully compliant |
-| `## Long-Term Direction` | yes | Phases, milestones, 6-12 month vision, key thresholds |
-| `## Open Decisions` | yes | Questions waiting on input. "None." if empty |
-| `## Decisions` | yes | Reverse-chronological decision log. Date, decision, rationale |
-| `## Repo Notes` | yes | Gotchas, unusual setup, surprises for future agents |
-| `## Links` | no | Wikilinks to related files, home pages, external docs |
+```
 
 ## Field Reference
 
@@ -197,8 +183,15 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 | `name` | yes | string | Outpost |
 | `category` | yes | enum | Outpost |
 | `domain` | yes | string | Outpost |
-| `sensitivity` | no | enum | Outpost |
 | `tags` | no | list | Outpost |
+| `file_version` | no | string | Outpost |
+
+### Description & Location
+| Field | Required | Type | Set by |
+|-------|----------|------|--------|
+| `description` | yes | string | Outpost |
+| `location` | yes | string | Outpost |
+| `location_note` | no | string | Outpost |
 
 ### Stack
 | Field | Required | Type | Set by |
@@ -215,6 +208,7 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 | `repo_url` | no | string | Outpost |
 | `repo_type` | yes | enum | Outpost |
 | `default_branch` | no | string | Outpost |
+| `sensitivity` | no | enum | Outpost |
 
 ### Compliance
 | Field | Required | Type | Set by |
@@ -225,8 +219,9 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 ### Lifecycle
 | Field | Required | Type | Set by |
 |-------|----------|------|--------|
-| `state` | yes | enum | ADAMA |
-| `condition` | yes | enum | ADAMA |
+| `phase` | yes | enum | ADAMA |
+| `status` | no | enum | ADAMA |
+| `condition` | no | enum | ADAMA |
 
 ### Priority
 | Field | Required | Type | Set by |
@@ -254,15 +249,28 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 | `depends_on` | no | list | ADAMA |
 | `depended_on_by` | no | list | ADAMA |
 
-### Meta
-| Field | Required | Type | Set by |
-|-------|----------|------|--------|
-| `file_version` | no | string | Outpost |
+## Body Section Reference
+
+| Section | Required | Purpose |
+|---------|----------|---------|
+| `# {{ name }}` | yes | Title |
+| `## Current Focus` | yes | What's being worked on. One sentence |
+| `## Full Backlog` | yes | All next actions, prioritized |
+| `## Blockers` | yes | What's stopped and why. "None." if empty |
+| `## Compliance Gaps` | yes | Standards violations with fixes. "None." if clean |
+| `## Long-Term Direction` | yes | Phases, milestones, 6-12 month vision, thresholds |
+| `## Open Decisions` | yes | Questions waiting on input. "None." if empty |
+| `## Decisions` | yes | Reverse-chronological decision log |
+| `## Repo Notes` | yes | Gotchas, surprises for future agents |
+| `## Links` | no | Wikilinks to related files |
 
 ## Enums
 
-### state
-`commissioning` | `operational` | `dormant` | `transiting` | `decommissioned` | `destroyed`
+### phase
+`brief` (idea) | `survey` (evaluating) | `outpost` (building)
+
+### status (terminal only)
+`dormant` (paused) | `decommissioned` (retired) | `destroyed` (deleted)
 
 ### condition
 `condition-green` | `yellow-alert` | `red-alert` | `adrift`
@@ -271,7 +279,7 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 `P1` (now) | `P2` (soon) | `P3` (later) | `P4` (parked)
 
 ### criticality
-`tier-0` (workspace infra: ADAMA) | `tier-1` (core product) | `tier-2` (supporting) | `tier-3` (experiment)
+`tier-0` (workspace infra: ADAMA) | `tier-1` (core) | `tier-2` (supporting) | `tier-3` (experiment)
 
 ### category
 `application` | `library` | `tool` | `infrastructure` | `knowledge-base` | `audit` | `brand` | `experiment` | `control-plane`
@@ -288,22 +296,8 @@ Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for op
 ### owner_type
 `human` | `agent` | `team`
 
-### owner (convention)
-Use lowercase GitHub-style handles for humans, agent names for agents.
-
-## Condition Determination
-
-During check-in, ADAMA evaluates:
-
-| If | Then condition |
-|----|---------------|
-| Outpost responded to check-in, no issues in `## Blockers` | `condition-green` |
-| Outpost responded but reports blockers or stale warnings | `yellow-alert` |
-| Outpost responded but reports build/tool failure, data loss, or auth breach | `red-alert` |
-| Outpost is `operational` but `last_active` exceeds `stale_threshold_days` | `yellow-alert` (flag) |
-| Outpost is `operational` but no response to check-in for 2x `stale_threshold_days` | `adrift` |
-
 ## Related
 
-- [[dashboard|Dashboard Derivation]]
+- [[dashboard-derivation|Dashboard Derivation]]
 - [[okf|OKF Convention]]
+- [[init-outpost|Init Prompt]]

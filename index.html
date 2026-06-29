@@ -16,14 +16,16 @@
   td { padding: 10px 12px; border-bottom: 1px solid #21262d; }
   .row-clickable { cursor: pointer; }
   .row-clickable:hover { background: #161b22; }
-  .focus { color: #8b949e; font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .focus { color: #8b949e; font-size: 13px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .desc { color: #8b949e; font-size: 12px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-  .badge-blue { background: #1f6feb33; color: #58a6ff; }
   .badge-green { background: #23863633; color: #3fb950; }
+  .badge-blue { background: #1f6feb33; color: #58a6ff; }
   .badge-yellow { background: #9e6a0333; color: #d2991d; }
   .badge-red { background: #da363333; color: #f85149; }
-  .badge-gray { background: #30363d; color: #8b949e; }
+  .badge-gray { background: #30363d; color: #6b7280; }
   .badge-purple { background: #a371f733; color: #a371f7; }
+  .badge-teal { background: #2dd4bf33; color: #2dd4bf; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
   .dot-green { background: #3fb950; }
   .dot-yellow { background: #d2991d; }
@@ -51,27 +53,46 @@
   .detail-content a { color: #58a6ff; }
   .detail-content code { background: #0d1117; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
   .detail-content blockquote { border-left: 2px solid #30363d; padding-left: 12px; color: #8b949e; margin: 8px 0; }
+  .phase-pipeline { display: flex; align-items: center; gap: 8px; margin: 16px 0; font-size: 13px; color: #8b949e; }
+  .phase-step { padding: 4px 12px; border-radius: 4px; border: 1px solid #21262d; }
+  .phase-active { background: #1f6feb22; border-color: #1f6feb44; color: #58a6ff; font-weight: 500; }
+  .phase-arrow { color: #484f58; }
   .checkbox { color: #8b949e; }
   .checkbox-checked { color: #3fb950; }
 </style>
 </head>
 <body>
 <h1>ADAMA dashboard</h1>
-<p class="subtitle">Live &mdash; reads outpost state files on every load. Click a row to expand.</p>
+<p class="subtitle">Live — reads outpost state files on every load. Click a row to expand.</p>
+
+<div class="phase-pipeline">
+  <span class="phase-step phase-arrow">brief</span>
+  <span class="phase-arrow">→</span>
+  <span class="phase-step phase-arrow">survey</span>
+  <span class="phase-arrow">→</span>
+  <span class="phase-step phase-arrow">outpost</span>
+  <span style="margin-left:16px;color:#484f58">|</span>
+  <span style="margin-left:16px;color:#6b7280">dormant · decommissioned · destroyed</span>
+</div>
 
 <div class="stats" id="stats"></div>
-<div class="section-title">All Outposts</div>
+<div class="section-title">Outposts</div>
 <div id="table-container"><p class="loading">loading outposts&hellip;</p></div>
 <p class="footer">ADAMA control plane &middot; <code>Serve Dashboard.command</code></p>
 
 <script>
 var OUTPOSTS_DIR = 'outposts';
+var expandedSlug = null;
+var allOutposts = [];
 
-var STATE_BADGES = {
-  operational: '<span class="badge badge-blue">operational</span>',
+var PHASE_BADGES = {
+  brief: '<span class="badge badge-purple">brief</span>',
+  survey: '<span class="badge badge-yellow">survey</span>',
+  outpost: '<span class="badge badge-blue">outpost</span>'
+};
+
+var STATUS_LABELS = {
   dormant: '<span class="badge badge-gray">dormant</span>',
-  commissioning: '<span class="badge badge-purple">commissioning</span>',
-  transiting: '<span class="badge badge-yellow">transiting</span>',
   decommissioned: '<span class="badge badge-gray">decommissioned</span>',
   destroyed: '<span class="badge badge-red">destroyed</span>'
 };
@@ -82,9 +103,6 @@ var CONDITION_DOTS = {
   'red-alert': '<span class="dot dot-red"></span> red-alert',
   adrift: '<span class="dot dot-gray"></span> adrift'
 };
-
-var expandedSlug = null;
-var allOutposts = [];
 
 function parseFrontmatter(text) {
   var m = text.match(/^---\s*\n(.*?)\n---/s);
@@ -108,6 +126,20 @@ function parseFrontmatter(text) {
   return data;
 }
 
+function getDescriptionFromYAML(text) {
+  var m = text.match(/^---\s*\n(.*?)\n---/s);
+  if (!m) return '';
+  var lines = m[1].split('\n');
+  var inDesc = false, desc = '';
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (line.indexOf('description:') === 0) { inDesc = true; desc = line.replace(/^description:\s*>?\s*/, ''); continue; }
+    if (inDesc && line.indexOf(':') !== -1 && !line.startsWith(' ')) break;
+    if (inDesc) desc += ' ' + line.trim();
+  }
+  return desc.slice(0, 160) || '\u2014';
+}
+
 function firstBodyLine(text) {
   var parts = text.split(/^---$/m);
   if (parts.length < 3) return '\u2014';
@@ -115,7 +147,7 @@ function firstBodyLine(text) {
   var lines = body.split('\n');
   for (var i = 0; i < lines.length; i++) {
     var s = lines[i].trim();
-    if (s && s.indexOf('#') !== 0) return s.slice(0, 140);
+    if (s && s.indexOf('#') !== 0) return s.slice(0, 160);
   }
   return '\u2014';
 }
@@ -133,8 +165,13 @@ function daysAgo(dateStr) {
   return Math.floor((now - d) / (1000 * 60 * 60 * 24));
 }
 
-function conditionHtml(condition, state) {
-  if (state !== 'operational') return '\u2014';
+function phaseDisplay(o) {
+  if (o.status) return STATUS_LABELS[o.status] || o.status;
+  return PHASE_BADGES[o.phase] || o.phase || '\u2014';
+}
+
+function conditionHtml(condition, phase, status) {
+  if (status) return '\u2014';
   return CONDITION_DOTS[condition] || condition || '\u2014';
 }
 
@@ -146,40 +183,28 @@ function staleIndicator(staleDays, threshold) {
 
 function markdownToHtml(md) {
   var html = md;
-  // Headers
   html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
-  // Bold and italic
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  // Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Horizontal rules
   html = html.replace(/^---$/gm, '<hr>');
-  // Unordered lists
+  html = html.replace(/^- \[x\] (.+)$/gm, '<li><span class="checkbox-checked">\u2611</span> $1</li>');
+  html = html.replace(/^- \[ \] (.+)$/gm, '<li><span class="checkbox">\u2610</span> $1</li>');
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
-  // Checkboxes
-  html = html.replace(/<li>\[x\] (.+?)<\/li>/g, '<li><span class="checkbox-checked">\u2611</span> $1</li>');
-  html = html.replace(/<li>\[ \] (.+?)<\/li>/g, '<li><span class="checkbox">\u2610</span> $1</li>');
-  // Tables
   html = html.replace(/^\|(.+)\|$/gm, function(match) {
     var cells = match.slice(1, -1).split('|');
     var row = '';
-    for (var i = 0; i < cells.length; i++) {
-      row += '<td>' + cells[i].trim() + '</td>';
-    }
+    for (var i = 0; i < cells.length; i++) row += '<td>' + cells[i].trim() + '</td>';
     return '<tr>' + row + '</tr>';
   });
   html = html.replace(/((?:<tr>.*<\/tr>\n?)+)/g, '<table>$1</table>');
-  // Links
   html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-  // Blockquotes
   html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  // Line breaks
   html = html.replace(/\n\n/g, '</p><p>');
   html = html.replace(/\n/g, '<br>');
   return '<p>' + html + '</p>';
@@ -192,9 +217,7 @@ async function discoverSlugs() {
   var html = await resp.text();
   var re = /href="([^"]+-state\.md)"/g;
   var m;
-  while ((m = re.exec(html)) !== null) {
-    slugs.push(m[1].replace('-state.md', ''));
-  }
+  while ((m = re.exec(html)) !== null) slugs.push(m[1].replace('-state.md', ''));
   return slugs;
 }
 
@@ -204,6 +227,7 @@ async function loadOutpost(slug) {
   var text = await resp.text();
   var data = parseFrontmatter(text);
   data._slug = slug;
+  data._desc = getDescriptionFromYAML(text);
   data._rawBody = getBodyWithoutFrontmatter(text);
   data._bodyHtml = markdownToHtml(data._rawBody);
   data._focus = firstBodyLine(text);
@@ -214,21 +238,13 @@ async function loadOutpost(slug) {
 function renderDetail(slug) {
   var container = document.getElementById('detail-' + slug);
   if (!container) return;
-
-  if (container.innerHTML) {
-    container.innerHTML = '';
-    expandedSlug = null;
-    return;
-  }
-
+  if (container.innerHTML) { container.innerHTML = ''; expandedSlug = null; return; }
   for (var i = 0; i < allOutposts.length; i++) {
     if (allOutposts[i]._slug === slug) {
       container.innerHTML = '<div class="detail-content">' + allOutposts[i]._bodyHtml + '</div>';
       break;
     }
   }
-
-  // Collapse others
   var details = document.querySelectorAll('[id^="detail-"]');
   for (var j = 0; j < details.length; j++) {
     if (details[j].id !== 'detail-' + slug) details[j].innerHTML = '';
@@ -238,26 +254,29 @@ function renderDetail(slug) {
 
 function renderAll(outposts) {
   allOutposts = outposts;
-
   var green = 0, yellow = 0, red = 0, adrift = 0;
-  var operational = 0, dormant = 0;
+  var brief = 0, survey = 0, outpost = 0, dormant = 0;
   var agents = 0, gitignore = 0;
 
   var rows = [];
   for (var i = 0; i < outposts.length; i++) {
     var o = outposts[i];
-    var state = o.state || 'unknown';
+    var phase = o.phase || null;
+    var status = o.status || null;
     var condition = o.condition;
     var priority = o.priority || '\u2014';
     var tier = o.criticality || '\u2014';
     var lastActive = o.last_active || '\u2014';
     var threshold = parseInt(o.stale_threshold_days) || 14;
     var staleHtml = staleIndicator(o._staleDays, threshold);
-    var condHtml = conditionHtml(condition, state);
+    var condHtml = conditionHtml(condition, phase, status);
     var slug = o._slug;
+    var desc = o._desc || '\u2014';
 
-    if (state === 'operational') operational++;
-    if (state === 'dormant') dormant++;
+    if (status === 'dormant') dormant++;
+    else if (phase === 'brief') brief++;
+    else if (phase === 'survey') survey++;
+    else if (phase === 'outpost') outpost++;
     if (condition === 'condition-green') green++;
     if (condition === 'yellow-alert') yellow++;
     if (condition === 'red-alert') red++;
@@ -268,29 +287,29 @@ function renderAll(outposts) {
     rows.push(
       '<tr class="row-clickable" onclick="renderDetail(\'' + slug + '\')">' +
       '<td>' + (o.name || slug) + ' <span style="color:#484f58;font-size:11px">&#9654;</span></td>' +
-      '<td>' + (STATE_BADGES[state] || state) + '</td>' +
+      '<td>' + phaseDisplay(o) + '</td>' +
       '<td>' + condHtml + '</td>' +
       '<td>' + priority + '</td>' +
       '<td>' + tier + '</td>' +
       '<td>' + lastActive + staleHtml + '</td>' +
-      '<td class="focus">' + o._focus + '</td>' +
+      '<td class="desc">' + desc + '</td>' +
       '</tr>' +
       '<tr class="detail-row"><td colspan="7" id="detail-' + slug + '"></td></tr>'
     );
   }
 
   document.getElementById('table-container').innerHTML = '<table>' +
-    '<thead><tr><th>Outpost</th><th>State</th><th>Condition</th><th>Priority</th><th>Tier</th><th>Active</th><th>Focus</th></tr></thead>' +
-    '<tbody>' + rows.join('') + '</tbody>' +
-    '</table>';
+    '<thead><tr><th>Outpost</th><th>Phase</th><th>Condition</th><th>Priority</th><th>Tier</th><th>Active</th><th>Description</th></tr></thead>' +
+    '<tbody>' + rows.join('') + '</tbody></table>';
 
   var total = outposts.length;
+  var active = brief + survey + outpost;
   var compliance = agents + gitignore;
 
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="stat-label">Outposts</div><div class="stat-value">' + total + '</div></div>' +
-    '<div class="stat"><div class="stat-label">Operational</div><div class="stat-value" style="color:#3fb950">' + operational + '</div></div>' +
-    '<div class="stat"><div class="stat-label">Dormant</div><div class="stat-value" style="color:#8b949e">' + dormant + '</div></div>' +
+    '<div class="stat"><div class="stat-label">Active</div><div class="stat-value" style="color:#58a6ff">' + active + '</div></div>' +
+    '<div class="stat"><div class="stat-label">Dormant</div><div class="stat-value" style="color:#6b7280">' + dormant + '</div></div>' +
     '<div class="stat"><div class="stat-label">Compliance</div><div class="stat-value">' + compliance + '/' + (total * 2) + '</div></div>' +
     '<div class="stat"><div class="stat-label">Green</div><div class="stat-value" style="color:#3fb950">' + green + '</div></div>' +
     '<div class="stat"><div class="stat-label">Alerts</div><div class="stat-value" style="color:#d2991d">' + yellow + '</div></div>';
@@ -302,36 +321,31 @@ async function loadAll() {
     slugs = ['ADAMA', '_aporium', 'basicly', 'jamboree', 'quotaz',
              'prosodymaker', 'mac-optimization-audit', 'ml-feedback-program'];
   }
-
   var outposts = [];
   for (var i = 0; i < slugs.length; i++) {
     var data = await loadOutpost(slugs[i]);
     if (data) outposts.push(data);
   }
-
   if (!outposts.length) {
-    document.getElementById('table-container').innerHTML =
-      '<p class="error">No outposts loaded. Is the server running?</p>';
+    document.getElementById('table-container').innerHTML = '<p class="error">No outposts loaded.</p>';
     return;
   }
-
   var tierOrder = { 'tier-0': 0, 'tier-1': 1, 'tier-2': 2, 'tier-3': 3 };
   var priOrder = { P1: 0, P2: 1, P3: 2, P4: 3 };
-  var stateOrder = { operational: 0, transiting: 1, commissioning: 2, dormant: 3, decommissioned: 4, destroyed: 5 };
-
+  var phaseOrder = { outpost: 0, survey: 1, brief: 2 };
   outposts.sort(function(a, b) {
+    var aPhase = a.status ? 99 : (phaseOrder[a.phase] || 99);
+    var bPhase = b.status ? 99 : (phaseOrder[b.phase] || 99);
     return (tierOrder[a.criticality] || 99) - (tierOrder[b.criticality] || 99) ||
            (priOrder[a.priority] || 99) - (priOrder[b.priority] || 99) ||
-           (stateOrder[a.state] || 99) - (stateOrder[b.state] || 99) ||
+           aPhase - bPhase ||
            (a.name || a._slug).localeCompare(b.name || b._slug);
   });
-
   renderAll(outposts);
 }
 
 loadAll().catch(function(err) {
-  document.getElementById('table-container').innerHTML =
-    '<p class="error">Failed to load: ' + err.message + '</p>';
+  document.getElementById('table-container').innerHTML = '<p class="error">Failed to load: ' + err.message + '</p>';
 });
 </script>
 </body>
