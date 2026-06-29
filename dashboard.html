@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sisko dashboard</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; background: #0d1117; color: #c9d1d9; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 13px; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #21262d; color: #8b949e; font-weight: 500; font-size: 12px; text-transform: uppercase; }
+  td { padding: 10px 12px; border-bottom: 1px solid #21262d; }
+  tr:hover { background: #161b22; }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .focus { color: #8b949e; font-size: 13px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .badge-blue { background: #1f6feb33; color: #58a6ff; }
+  .badge-green { background: #23863633; color: #3fb950; }
+  .badge-yellow { background: #9e6a0333; color: #d2991d; }
+  .badge-red { background: #da363333; color: #f85149; }
+  .badge-gray { background: #30363d; color: #8b949e; }
+  .badge-purple { background: #a371f733; color: #a371f7; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .dot-green { background: #3fb950; }
+  .dot-yellow { background: #d2991d; }
+  .dot-red { background: #f85149; }
+  .dot-gray { background: #6b7280; }
+  .stale { color: #d2991d; cursor: help; }
+  .stats { display: flex; gap: 24px; margin: 24px 0; flex-wrap: wrap; }
+  .stat { background: #161b22; border: 1px solid #21262d; border-radius: 6px; padding: 12px 16px; min-width: 100px; }
+  .stat-label { font-size: 11px; color: #8b949e; text-transform: uppercase; }
+  .stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+  .section-title { font-size: 16px; margin: 28px 0 12px; color: #f0f6fc; }
+  .blocker { color: #f85149; }
+  .recent { margin: 0; padding: 0; list-style: none; }
+  .recent li { padding: 4px 0; font-size: 14px; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #21262d; color: #484f58; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>sisko dashboard</h1>
+<p class="subtitle">Derived from outpost state files. Generated 2026-06-28.</p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">Outposts</div><div class="stat-value">8</div></div>
+  <div class="stat"><div class="stat-label">Operational</div><div class="stat-value" style="color:#3fb950">6</div></div>
+  <div class="stat"><div class="stat-label">Dormant</div><div class="stat-value" style="color:#8b949e">2</div></div>
+  <div class="stat"><div class="stat-label">Compliance</div><div class="stat-value">9/16</div></div>
+  <div class="stat"><div class="stat-label">Green</div><div class="stat-value" style="color:#3fb950">6</div></div>
+  <div class="stat"><div class="stat-label">Alerts</div><div class="stat-value" style="color:#d2991d">0</div></div>
+</div>
+
+<div class="section-title">All Outposts</div>
+<table>
+<thead>
+  <tr><th>Outpost</th><th>State</th><th>Condition</th><th>Priority</th><th>Tier</th><th>Active</th><th>Focus</th></tr>
+</thead>
+<tbody>
+        <tr>
+          <td><a href="outposts/sisko-state.md">sisko</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P1</td>
+          <td>tier-0</td>
+          <td>2026-06-28</td>
+          <td class="focus">Control plane for the workspace. Single source of truth for outpost status, priorities, standards, and cross-outpost coo</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/_aporium-state.md">Aporium</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P1</td>
+          <td>tier-1</td>
+          <td>2026-06-28</td>
+          <td class="focus">Personal knowledge base at the intersection of AI, human psychology, and meaning-making. Built on the Karpathy LLM Wiki </td>
+        </tr>
+        <tr>
+          <td><a href="outposts/basicly-state.md">basicly</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P2</td>
+          <td>tier-2</td>
+          <td>2026-06-28</td>
+          <td class="focus">Private macOS language assistant that captures approved spelling, grammar, and vocabulary signals from real writing in u</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/jamboree-state.md">jamboree</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P2</td>
+          <td>tier-2</td>
+          <td>2026-06-28</td>
+          <td class="focus">Audio Production Suite integrating specialized Ableton Live 12 control and audio processing into a unified workspace. Lo</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/quotaz-state.md">quotaz</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P3</td>
+          <td>tier-2</td>
+          <td>2026-06-28</td>
+          <td class="focus">AI service and model evaluation toolkit — compare free-tier models across providers, run evals, generate reports. Pipeli</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/prosodymaker-state.md">prosodymaker</a></td>
+          <td><span class="badge badge-blue">operational</span></td>
+          <td><span class="dot dot-green"></span> condition-green</td>
+          <td>P3</td>
+          <td>tier-3</td>
+          <td>2026-06-28</td>
+          <td class="focus">Chain-of-thought song maker. Audio/music generation with structured reasoning. Tracker/logs-based development workflow w</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/mac-optimization-audit-state.md">mac-optimization-audit</a></td>
+          <td><span class="badge badge-gray">dormant</span></td>
+          <td>—</td>
+          <td>P4</td>
+          <td>tier-3</td>
+          <td>2026-06-20</td>
+          <td class="focus">Private working repo for documenting and improving the current state of this Mac. Documentation-heavy — tracks iCloud, s</td>
+        </tr>
+        <tr>
+          <td><a href="outposts/ml-feedback-program-state.md">ml-feedback-program</a></td>
+          <td><span class="badge badge-gray">dormant</span></td>
+          <td>—</td>
+          <td>P4</td>
+          <td>tier-3</td>
+          <td>2026-06-26</td>
+          <td class="focus">Machine learning feedback program. Details unclear — stack, purpose, and goals need discovery before reactivation.</td>
+        </tr>
+</tbody>
+</table>
+
+<div class="section-title">Recently Active</div>
+<ul class="recent">
+        <li><strong>sisko</strong> — 2026-06-28</li>
+        <li><strong>Aporium</strong> — 2026-06-28</li>
+        <li><strong>basicly</strong> — 2026-06-28</li>
+        <li><strong>jamboree</strong> — 2026-06-28</li>
+        <li><strong>quotaz</strong> — 2026-06-28</li>
+        <li><strong>prosodymaker</strong> — 2026-06-28</li>
+        <li><strong>ml-feedback-program</strong> — 2026-06-26</li>
+</ul>
+
+<p class="footer">sisko control plane &middot; <code>bin/generate-dashboard</code> &middot; zero dependencies</p>
+</body>
+</html>
