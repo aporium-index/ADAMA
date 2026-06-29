@@ -113,11 +113,37 @@ compilation pipeline is stable.
 - [ ] OKF frontmatter retrofit on all wiki pages
 - [ ] Resolve .opencode/node_modules pollution in vault
 - [ ] Ontological preface test protocol
+
+Exactly 3 items. Prioritize gaps found during audit. The full list goes in `## Full Backlog`.
+
+## Full Backlog
+
+All next actions discovered, not just the top 3. Priority order. This gives ADAMA a broader view of the outpost's needs beyond the immediate focus.
+
 - [ ] Decide plugin trial sequence
+- [ ] Raw provenance repair wave for Author/Source Provenance gaps
+- [ ] Review compilation pipeline performance
 
 ## Blockers
 
 None.
+
+## Compliance Gaps
+
+Each gap mapped to the specific ADAMA standard it violates. One line per gap, with the fix.
+
+- **No AGENTS.md** (standards/agents.md §1) — create at repo root
+- **.gitignore missing .venv/** (standards/git.md § Repo Structure) — add `.venv/` to .gitignore
+
+## Long-Term Direction
+
+Phases, milestones, ambitions beyond current focus. What's the 6-12 month vision? Known inflection points? Thresholds that would change the outpost's state or priority?
+
+Phase 1: OKF frontmatter retrofit across all 845 wiki pages.
+Phase 2: Compilation pipeline stabilization and agent-driven synthesis.
+Phase 3: Public knowledge graph export.
+
+Key threshold: if the compilation pipeline can reliably produce publication-ready syntheses, priority should increase from P1 to P0 for a production release sprint.
 
 ## Open Decisions
 
@@ -131,17 +157,36 @@ None.
 | 2026-06-28 | Bare git repo for dev-state | iCloud sync conflicts with full git repos |
 | 2026-06-28 | ADAMA as control plane name | Distinctive, won't collide with project naming |
 
-## Notes
+## Repo Notes
+
+Special considerations for this repo. Anything an agent working here should know that isn't captured above. Gotchas, unusual setup, conventions that differ from ADAMA defaults.
 
 Aporium lives outside `workspace/` due to iCloud constraints.
 Wikilinks in this file resolve within Aporium's vault context.
+Bare git repo at `workspace/_aporium/Aporium.git` — use `git --git-dir` for operations.
 
 ## Links
 
 - AGENTS.md
 - [[Aporium Wiki|wiki/index.md]]
 - [[Aporium Hot|wiki/hot.md]]
-```
+## Body Section Reference
+
+| Section | Required | Purpose |
+|---------|----------|---------|
+| `# {{ name }}` | yes | Title header |
+| `## Description` | yes | One paragraph: what this outpost is |
+| `## Location` | yes | Path on disk. If not in standard `workspace/<slug>/`, explain why |
+| `## Current Focus` | yes | What's being worked on right now. One sentence |
+| `## Next Actions` | yes | Exactly 3 concrete, completable items. Highest priority |
+| `## Full Backlog` | yes | All next actions, prioritized. Broader view for ADAMA |
+| `## Blockers` | yes | What's stopped and why. "None." if empty |
+| `## Compliance Gaps` | yes | Standards not met, each with fix. "None." if fully compliant |
+| `## Long-Term Direction` | yes | Phases, milestones, 6-12 month vision, key thresholds |
+| `## Open Decisions` | yes | Questions waiting on input. "None." if empty |
+| `## Decisions` | yes | Reverse-chronological decision log. Date, decision, rationale |
+| `## Repo Notes` | yes | Gotchas, unusual setup, surprises for future agents |
+| `## Links` | no | Wikilinks to related files, home pages, external docs |
 
 ## Field Reference
 
