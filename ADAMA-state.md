@@ -41,14 +41,14 @@ file_version: "1.1"
 
 ## Current Focus
 
-Standards self-audit: this session reviewed ADAMA's own state file against its standards, surfaced three internal contradictions (stale dashboard-derivation standard, agents.md/template section-name mismatch, incomplete .gitignore), and is landing fixes.
+Standards reconciliation landed: dashboard-derivation.md migrated to phase model, agents.md Top-Three rule aligned with template, hot.md caught up. Next: backlog items below.
 
 ## Full Backlog
 
-- [ ] **Fix .gitignore to meet git.md minimum** — add `node_modules/`, `.venv/`, `__pycache__/` (standards/git.md § Repo Structure)
-- [ ] **Reconcile standards/dashboard-derivation.md with phase model** — still references old `state` field and `operational`/`commissioning`/`transiting` enums; outpost-state.md now uses `phase` (brief/survey/outpost) + `status` (dormant/decommissioned/destroyed)
-- [ ] **Reconcile standards/agents.md § Three Next Actions Rule with template** — references a `## Next Actions` section that does not exist in outpost-state.md; template uses `## Full Backlog` with top-3 marking
-- [ ] Append hot.md entry for phase model overhaul + this audit (hot.md stops at bootstrap day)
+- [x] **Fix .gitignore to meet git.md minimum** — added `node_modules/`, `.venv/`, `__pycache__/`
+- [x] **Reconcile standards/dashboard-derivation.md with phase model** — column mappings, sorting, aggregations, shell snippets, output template all use `phase`/`status`/`condition`; stale symlink examples fixed
+- [x] **Reconcile standards/agents.md § Three Next Actions Rule with template** — renamed to Top-Three Backlog Rule, references `## Full Backlog`
+- [x] Append hot.md entry for phase model overhaul + audit
 - [ ] Rename legacy `SISKO_ROOT` variable in bin/serve to ADAMA-named equivalent
 - [ ] Dashboard as persistent background service (launchd) — currently manual start via Serve Dashboard.command
 - [ ] AGENTS.md rollout for jamboree, quotaz, mac-optimization-audit, ml-feedback-program (see dashboard.md compliance table)
@@ -61,10 +61,12 @@ None.
 
 ## Compliance Gaps
 
-- **`.gitignore` incomplete** — only `.DS_Store` and `.tmp/` present. Missing `node_modules/`, `.venv/`, `__pycache__/` required by standards/git.md § Repo Structure. Fix: append the three entries.
-- **`standards/dashboard-derivation.md` contradicts `standards/outpost-state.md`** — derivation standard still uses the retired `state` field and `operational`/`commissioning`/`transiting`/`decommissioned` enums. The phase model (outpost-state.md § Phases) replaced these with `phase` (brief/survey/outpost) + `status` (dormant/decommissioned/destroyed). The live dashboard.md was migrated but the derivation standard was not. Fix: rewrite dashboard-derivation.md column mappings and aggregations to use `phase`/`status`/`condition`.
-- **`standards/agents.md` § Three Next Actions Rule references a non-existent section** — it mandates "exactly three items" in `## Next Actions`, but the outpost-state.md template defines `## Full Backlog` (all actions, top three are the immediate focus). Outposts following agents.md will look for a section the template does not define. Fix: align agents.md wording to reference `## Full Backlog` and the top-3 convention.
-- **`hot.md` not updated for recent work** — last entry is the 2026-06-28 bootstrap; the phase model overhaul, template v1.1, and this audit are unlogged. Fix: append a `## 2026-06-28` ADAMA section.
+- **`hot.md` now current** — phase model overhaul + this audit logged (was stopping at bootstrap day). Fixed this session.
+- **`standards/dashboard-derivation.md` now reconciled** — migrated from retired `state`/`operational`/`commissioning`/`transiting` enums to `phase`/`status`/`condition`. Fixed this session.
+- **`standards/agents.md` § Top-Three Backlog Rule now aligned** — references `## Full Backlog` per outpost-state.md template (was pointing at non-existent `## Next Actions`). Fixed this session.
+- **`.gitignore` now meets git.md minimum** — `node_modules/`, `.venv/`, `__pycache__/` added. Fixed this session.
+- **No versioned release process** — standards change often; need CHANGELOG or version bump automation. Open.
+- **Dashboard requires manual server start** — should be a background service. Open.
 
 ## Long-Term Direction
 
@@ -84,6 +86,7 @@ Threshold: when all non-dormant outposts reach `outpost` phase with `condition-g
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-06-28 | Standards reconciled with phase model | dashboard-derivation.md and agents.md were drifting from outpost-state.md after the phase-model overhaul; closed three contradictions in one pass |
 | 2026-06-28 | Self-audit landed three standards fixes | ADAMA must conform to its own standards before enforcing them on outposts |
 | 2026-06-28 | sisko → ADAMA | sisko looked like "sicko" |
 | 2026-06-28 | Phase model: brief → survey → outpost | Starship metaphors were dishonest — no outpost was operational |

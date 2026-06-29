@@ -10,6 +10,23 @@ Chronological change log for the workspace. Newest at top.
 
 ## 2026-06-28
 
+### ADAMA — Standards self-audit & reconciliation
+- **.gitignore** brought up to git.md minimum (added `node_modules/`, `.venv/`, `__pycache__/`)
+- **ADAMA-state.md** rewritten: `languages: [python]`, location/notes precise, all 9 body sections refreshed from audit findings, `## Template Feedback` section added (7 items)
+- **standards/agents.md** § Three Next Actions Rule → renamed to Top-Three Backlog Rule, now references `## Full Backlog` (was pointing at a non-existent `## Next Actions` section)
+- **standards/dashboard-derivation.md** migrated to phase model: column mappings use `phase`/`status`/`condition` (was using retired `state`/`operational`/`commissioning`/`transiting` enums); sorting, aggregations, shell snippets, and output template updated; stale symlink examples fixed
+- **Compliance gaps closed:** .gitignore incomplete, dashboard-derivation.md contradicted outpost-state.md, agents.md contradicted outpost-state.md
+- **Open:** hot.md was not updated for the phase model overhaul — fixed this entry
+
+### ADAMA — Phase model overhaul
+- Replaced starship states with honest `brief → survey → outpost` pipeline
+- State files restructured: description/location moved to YAML frontmatter
+- Template v1.1: `## Full Backlog` (all actions, top-3 immediate) replaces `## Next Actions`
+- `phase`/`status`/`condition` fields replace retired `state` enum
+- Init prompt (standards/init-outpost.md) rewritten for broader scope
+
+## 2026-06-28
+
 ### ADAMA — Architecture consolidation
 - Replaced `projects/` → `outposts/` (distinct term, no collision risk)
 - State files replace PROJECT.md: each outpost has `<slug>-state.md` in repo root

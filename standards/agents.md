@@ -24,8 +24,8 @@ timestamp: 2026-06-28
 2. Git commit and push all changes.
 3. If the outpost's condition has changed (build broken, blockers found), note it in `## Blockers` so ADAMA picks it up at next check-in.
 
-## Three Next Actions Rule
-The `## Next Actions` section must always contain exactly three items. Not two. Not ten. Three. This forces prioritization. If there are more than three candidates, pick the three that unblock the most downstream work. If there are fewer than three, the outpost is idle or needs direction — flag it.
+## Top-Three Backlog Rule
+The `## Full Backlog` section (per `outpost-state.md` template) holds all next actions in priority order. The **top three** items are the outpost's immediate focus — the three that unblock the most downstream work. If there are more than three candidates, pick three and demote the rest below a visible separator. If there are fewer than three candidates, the outpost is idle or needs direction — flag it in `## Open Decisions` or `## Blockers`.
 
 ## Git: Always Commit + Push
 After every session, commit all changes and push to remote. No uncommitted work lingers between sessions. No stash-and-forget. If work is incomplete, commit with `WIP:` prefix and push. ADAMA considers `last_active` stale if there's no push within `stale_threshold_days`.

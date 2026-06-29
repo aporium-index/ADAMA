@@ -16,10 +16,10 @@ The dashboard is not a hand-maintained document. It is a deterministic view comp
 
 ```
 ADAMA/outposts/
-├── _aporium-state.md    →  symlink → ../workspace/_aporium/_aporium-state.md
-├── _basicly-state.md    →  symlink → ../workspace/basicly/_basicly-state.md
-├── _jamboree-state.md   →  symlink → ...
-├── _ADAMA-state.md      →  symlink → ../workspace/ADAMA/_ADAMA-state.md
+├── _aporium-state.md    →  symlink → ../../_aporium/_aporium-state.md
+├── basicly-state.md     →  symlink → ../../basicly/basicly-state.md
+├── jamboree-state.md    →  symlink → ../../jamboree/jamboree-state.md
+├── ADAMA-state.md       →  symlink → ../../ADAMA/ADAMA-state.md
 └── ...
 ```
 
@@ -34,10 +34,11 @@ Every `.md` file in `outposts/` is a symlink to a real state file in its repo. T
 ### Column Mapping
 
 | Dashboard Column | Frontmatter Field | Logic |
-|---|---|---|---|
+|---|---|---|
 | Outpost | `name` | Display name, wikilinked to symlink target |
-| State | `state` | Raw value |
-| Condition | `condition` | Raw value, or `—` if terminal state |
+| Phase | `phase` | Raw value (`brief` / `survey` / `outpost`) |
+| Status | `status` | Raw value (`dormant` / `decommissioned` / `destroyed`), or `—` if null (active) |
+| Condition | `condition` | Raw value, or `—` if status is terminal |
 | Priority | `priority` | Raw value |
 | Tier | `criticality` | Raw value |
 | Last Active | `last_active` | Date, with staleness indicator if threshold exceeded |
@@ -48,7 +49,8 @@ Every `.md` file in `outposts/` is a symlink to a real state file in its repo. T
 ```
 1. criticality  (tier-0 → tier-3)
 2. priority     (P1 → P4 within each tier)
-3. state        (operational first, then dormant, then terminal)
+3. phase        (outpost → survey → brief), then terminal status
+                 (dormant → decommissioned → destroyed)
 4. name         (alphabetical)
 ```
 
@@ -66,26 +68,33 @@ Every field in the health section is derived:
 compliance_score = sum(has_agents_md + has_gitignore) per outpost
 max_compliance   = 2 * outpost_count
 
-operational_count     = count(state == 'operational')
-dormant_count         = count(state == 'dormant')
-commissioning_count   = count(state == 'commissioning')
-decommissioned_count  = count(state == 'decommissioned')
-transiting_count      = count(state == 'transiting')
-total_outposts        = count(all)
+# Phase counts (active pipeline)
+brief_count      = count(phase == 'brief')
+survey_count     = count(phase == 'survey')
+outpost_count    = count(phase == 'outpost')
 
-green_count    = count(condition == 'condition-green' AND state == 'operational')
-yellow_count   = count(condition == 'yellow-alert' AND state == 'operational')
-red_count      = count(condition == 'red-alert' AND state == 'operational')
-adrift_count   = count(condition == 'adrift')
+# Terminal status counts (left the pipeline)
+dormant_count          = count(status == 'dormant')
+decommissioned_count   = count(status == 'decommissioned')
+destroyed_count        = count(status == 'destroyed')
+
+total_outposts  = count(all)
+active_count    = total_outposts - dormant_count - decommissioned_count - destroyed_count
+
+# Condition counts — only meaningful for active outposts
+green_count    = count(condition == 'condition-green' AND status == null)
+yellow_count   = count(condition == 'yellow-alert'  AND status == null)
+red_count      = count(condition == 'red-alert'     AND status == null)
+adrift_count   = count(condition == 'adrift'        AND status == null)
 ```
 
 Display:
 ```
 Control Plane Health
-- Outposts: {total_outposts}  ({operational_count} operational, {dormant_count} dormant, ...)
+- Outposts: {total_outposts} ({active_count} active: {outpost_count} outpost, {survey_count} survey, {brief_count} brief; {dormant_count} dormant, {decommissioned_count} decommissioned, {destroyed_count} destroyed)
 - Condition: {green_count} green, {yellow_count} yellow, {red_count} red, {adrift_count} adrift
 - Compliance: {compliance_score}/{max_compliance}
-- Standards: 3 standards files
+- Standards: {standards_count} standards files
 ```
 
 ## Rebuilding the Dashboard
@@ -103,13 +112,14 @@ Verify all symlinks resolve:
 for f in outposts/*.md; do [ -L "$f" ] && [ -e "$f" ] || echo "BROKEN: $f"; done
 ```
 
-Extract all states for quick scan:
+Extract all phases for quick scan:
 ```bash
 for f in outposts/*.md; do
   slug=$(basename "$f" .md)
-  state=$(sed -n '/^---$/,/^---$/p' "$f" | grep '^state:' | cut -d' ' -f2)
+  phase=$(sed -n '/^---$/,/^---$/p' "$f" | grep '^phase:' | cut -d' ' -f2)
+  status=$(sed -n '/^---$/,/^---$/p' "$f" | grep '^status:' | cut -d' ' -f2)
   cond=$(sed -n '/^---$/,/^---$/p' "$f" | grep '^condition:' | cut -d' ' -f2)
-  echo "$slug | $state | $cond"
+  echo "$slug | phase=$phase | status=$status | condition=$cond"
 done
 ```
 
@@ -131,7 +141,7 @@ An agent verifying the dashboard:
 
 ## Dashboard Template (output only)
 
-```
+````
 ---
 type: reference
 tags: [dashboard, derived]
@@ -142,12 +152,27 @@ timestamp: YYYY-MM-DD
 
 > Derived from outpost state files. Last rebuilt: YYYY-MM-DD.
 
-## Active Outposts
+## Phase Pipeline
 
-| Outpost | State | Condition | Priority | Tier | Last Active | Focus |
-|---|---|---|---|---|---|---|
+```
+brief ──► survey ──► outpost
+(idea)    (evaluate)   (build)
+```
+
+| Phase | Outposts |
+|-------|----------|
+| outpost | {{ names where phase == 'outpost' }} |
+| survey | {{ names where phase == 'survey' }} |
+| brief | {{ names where phase == 'brief' }} |
+| dormant | {{ names where status == 'dormant' }} |
+| decommissioned | {{ names where status == 'decommissioned' }} |
+
+## All Outposts
+
+| Outpost | Phase | Status | Condition | Priority | Tier | Last Active | Focus |
+|---|---|---|---|---|---|---|---|
 | {{ range sorted outposts }} |
-| [[outposts/{{slug}}-state|{{name}}]] | {{state}} | {{condition_display}} | {{priority}} | {{criticality}} | {{last_active}}{{stale_marker}} | {{focus_line}} |
+| [[outposts/{{slug}}-state|{{name}}]] | {{phase}} | {{status_display}} | {{condition_display}} | {{priority}} | {{criticality}} | {{last_active}}{{stale_marker}} | {{focus_line}} |
 | {{ end }} |
 
 ## Blockers
@@ -158,7 +183,7 @@ timestamp: YYYY-MM-DD
 
 ## Control Plane Health
 
-- Outposts: {{total}} ({{operational_count}} operational, {{dormant}} dormant, {{commissioning}} commissioning, {{transiting}} transiting, {{decommissioned}} decommissioned)
+- Outposts: {{total}} ({{active_count}} active: {{outpost_count}} outpost, {{survey_count}} survey, {{brief_count}} brief; {{dormant_count}} dormant, {{decommissioned_count}} decommissioned, {{destroyed_count}} destroyed)
 - Condition: {{green}} green, {{yellow}} yellow, {{red}} red, {{adrift}} adrift
 - Compliance: {{compliance_score}}/{{max_compliance}}
 - Standards: {{standards_count}} standards files
@@ -175,7 +200,7 @@ timestamp: YYYY-MM-DD
 
 ---
 *Dashboard is derivable. To verify: read all `outposts/*.md` frontmatter and recompute.*
-```
+````
 
 ## Related
 
