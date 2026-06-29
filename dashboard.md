@@ -20,7 +20,7 @@ brief ──► survey ──► outpost
 | outpost | ADAMA |
 | survey | Aporium, basicly, jamboree, quotaz, prosodymaker |
 | brief | — |
-| dormant | Mac Optimization Audit, ml-feedback-program |
+| dormant | Mac Optimization Audit, rejoy |
 
 ## All Outposts
 
@@ -33,7 +33,7 @@ brief ──► survey ──► outpost
 | [[outposts/quotaz-state\|quotaz]] | survey | — | condition-green | P3 | tier-2 | 2026-06-29 | AI model eval toolkit — compare free-tier models |
 | [[outposts/prosodymaker-state\|prosodymaker]] | survey | — | condition-green | P3 | tier-3 | 2026-06-29 | Chain-of-thought song maker — tracker/logs-based dev |
 | [[outposts/mac-optimization-audit-state\|mac-optimization-audit]] | — | dormant | — | P4 | tier-3 | 2026-06-29 | Mac optimization reference docs |
-| [[outposts/ml-feedback-program-state\|ml-feedback-program]] | — | dormant | — | P4 | tier-3 | 2026-06-26 | ML feedback — unknown stack, needs discovery |
+| [[outposts/rejoy-state\|rejoy]] | — | dormant | — | P4 | tier-3 | 2026-06-29 | Music, culture, technology, and futures research with applied Suno feedback |
 
 ## Compliance
 
@@ -46,13 +46,13 @@ brief ──► survey ──► outpost
 | quotaz | ✗ | ✗ |
 | prosodymaker | ✗ | ✗ |
 | mac-optimization-audit | ✓ | ✓ |
-| ml-feedback-program | ✗ | ✗ |
+| rejoy | ✓ | ✓ |
 
 ## Control Plane Health
 
 - Outposts: 8 (1 outpost, 5 survey, 2 dormant)
 - Condition: 6 green, 0 yellow, 0 red, 0 adrift
-- Compliance: 5/16
+- Compliance: 7/16
 
 ---
 *To verify: read all `outposts/*.md` frontmatter and recompute.*

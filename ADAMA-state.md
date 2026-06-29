@@ -46,7 +46,7 @@ last_checkin: 2026-06-28
 timestamp: 2026-06-28
 stale_threshold_days: 7
 depends_on: []
-depended_on_by: [_aporium, basicly, jamboree, quotaz, prosodymaker, mac-optimization-audit, ml-feedback-program]
+depended_on_by: [_aporium, basicly, jamboree, quotaz, prosodymaker, mac-optimization-audit, rejoy]
 tags: [control-plane, meta, markdown, standards, dashboard]
 file_version: "1.4"
 ---
