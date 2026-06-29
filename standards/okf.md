@@ -36,10 +36,12 @@ timestamp: YYYY-MM-DD
 ## Additional Recommended Fields
 
 ```yaml
-status: active | draft | archived
+publication_status: active | draft | archived
 priority: P1 | P2 | P3 | P4
 project: project-slug        # which project this belongs to
 ```
+
+> **Note:** This field is `publication_status`, not `status`. The bare `status` field is reserved for outpost lifecycle state (`dormant` | `decommissioned` | `destroyed`) per `outpost-state.md`. Using `publication_status` here avoids a collision with the lifecycle `status` field used in state files.
 
 ## Implementation
 - Apply to all new files in ADAMA.
@@ -48,8 +50,9 @@ project: project-slug        # which project this belongs to
 
 ## Compatibility
 - OKF is compatible with Obsidian YAML frontmatter.
-- Existing Aporium frontmatter already maps closely: `type`, `tags`, `status`, `last_updated`.
+- Existing Aporium frontmatter already maps closely: `type`, `tags`, `publication_status`, `last_updated`.
 - The key addition is `timestamp` (ISO date, YYYY-MM-DD) for sortability.
+- Aporium's existing `status` field maps to `publication_status`, not outpost lifecycle `status`.
 
 ## Related
 - [[git|Git Conventions]]

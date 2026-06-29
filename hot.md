@@ -10,6 +10,12 @@ Chronological change log for the workspace. Newest at top.
 
 ## 2026-06-28
 
+### ADAMA — Status field collision resolved
+- OKF `status` (active|draft|archived) renamed to `publication_status` in standards/okf.md
+- Outpost lifecycle `status` (dormant|decommissioned|destroyed) unchanged
+- Zero-churn fix: no state files or dashboard logic used OKF's status values
+- Completes all 3 template gaps surfaced by jamboree init review
+
 ### ADAMA — Init process improvements (from jamboree review)
 - Reviewed jamboree state file (first outpost to run init) — all claims verified accurate
 - **standards/init-outpost.md** strengthened: audit checklist now checks .gitignore *contents* (not just existence); state file OKF frontmatter validation added (`type: project`); `## Template Feedback` added to body section list; top-3 marking convention formalized (`**Top N:**` prefix); commit step now uses `git add -A` (was only adding state file)
