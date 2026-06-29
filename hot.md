@@ -10,6 +10,11 @@ Chronological change log for the workspace. Newest at top.
 
 ## 2026-06-28
 
+### ADAMA — Sisko purge + standards check
+- bin/serve: `SISKO_ROOT` → `ADAMA_ROOT` (3 references) — last sisko→ADAMA rename leftover
+- bin/check-standards: new script — 7 checks for retired enums (`operational`, `commissioning`, `transiting`), retired `state` field, retired `## Next Actions` section, OKF bare `status:`, legacy `sisko` name. All passing.
+- Run after any standards change to catch drift early.
+
 ### ADAMA — Agent behavior rules added
 - standards/agents.md: new "Backlog Hygiene" section — mark done immediately, never suggest already-taken actions, end every message with suggestions
 - Triggered by agent suggesting actions that were already completed in a prior commit (items left as `[ ]` instead of `[x]`)

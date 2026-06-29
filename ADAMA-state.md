@@ -42,7 +42,7 @@ file_version: "1.1"
 
 ## Current Focus
 
-Three template gaps closed: `type: project` + `## Template Feedback` added to template, OKF/lifecycle `status` collision resolved (OKF → `publication_status`), init audit checklist strengthened. Ready to roll init to remaining outposts.
+Sisko legacy fully purged (bin/serve renamed). Standards self-consistency check script added (`bin/check-standards`) — 7 checks, all passing. Next: roll init to quotaz, or tackle dashboard background service.
 
 ## Full Backlog
 
@@ -50,7 +50,8 @@ Three template gaps closed: `type: project` + `## Template Feedback` added to te
 - [x] **Resolve `status` field collision between OKF and lifecycle** — OKF renamed `status` → `publication_status` (active|draft|archived); outpost lifecycle `status` (dormant|decommissioned|destroyed) unchanged; no state files needed updating
 - [x] **Strengthen init-outpost.md audit checklist** — .gitignore content check added, OKF frontmatter validation for state file, top-3 marking convention formalized, commit step uses `git add -A`
 - [x] Append hot.md entry for phase model overhaul + this audit
-- [ ] Rename legacy `SISKO_ROOT` variable in bin/serve to ADAMA-named equivalent
+- [x] **Rename legacy `SISKO_ROOT` variable in bin/serve** — all 3 references renamed to `ADAMA_ROOT`
+- [x] **Standards self-consistency check** — `bin/check-standards` script: 7 checks for retired enums, field names, section names, legacy names; run after any standards change
 - [ ] Dashboard as persistent background service (launchd) — currently manual start via Serve Dashboard.command
 - [ ] AGENTS.md rollout for jamboree, quotaz, mac-optimization-audit, ml-feedback-program (see dashboard.md compliance table)
 - [ ] Versioned release process for standards — CHANGELOG or version bump automation
@@ -87,6 +88,8 @@ Threshold: when all non-dormant outposts reach `outpost` phase with `condition-g
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-06-28 | Added `bin/check-standards` self-consistency script | dashboard-derivation.md drifted from outpost-state.md after phase model; a grep for retired values catches this class of error. 7 checks, all passing |
+| 2026-06-28 | Renamed `SISKO_ROOT` → `ADAMA_ROOT` in bin/serve | Last sisko→ADAMA rename leftover; cosmetic but confusing for future agents |
 | 2026-06-28 | Added Backlog Hygiene rule to agents.md | Agent suggested already-completed actions because backlog items weren't marked done in the same commit; also added "end with suggestions" rule |
 | 2026-06-28 | Renamed OKF `status` → `publication_status` | Outpost lifecycle `status` (dormant/decommissioned/destroyed) is established in phase model + dashboard-derivation; OKF's `status` (active/draft/archived) is recommended-only and applies to general markdown files. Renaming OKF's field is zero-churn — no state files or dashboard logic use OKF's status values |
 | 2026-06-28 | Reviewed jamboree init — first outpost run | All claims verified accurate (23 tools, 15 docs, 11 submodules, 2 prunable worktrees); surfaced 3 high-impact template gaps now in backlog |

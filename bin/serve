@@ -10,8 +10,8 @@ import os, sys, webbrowser, posixpath, urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SISKO_ROOT = os.path.dirname(SCRIPT_DIR)
-WORKSPACE_ROOT = os.path.dirname(SISKO_ROOT)
+ADAMA_ROOT = os.path.dirname(SCRIPT_DIR)
+WORKSPACE_ROOT = os.path.dirname(ADAMA_ROOT)
 
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, '.md': 'text/plain; charset=utf-8'}
@@ -21,7 +21,7 @@ class Handler(SimpleHTTPRequestHandler):
         words = [w for w in p.split('/') if w and w != '..']
         if len(words) >= 2 and words[0] == 'outposts':
             fname = words[-1]
-            lp = os.path.join(SISKO_ROOT, 'outposts', fname)
+            lp = os.path.join(ADAMA_ROOT, 'outposts', fname)
             if os.path.islink(lp):
                 rp = os.path.realpath(lp)
                 if rp.startswith(WORKSPACE_ROOT):
@@ -29,7 +29,7 @@ class Handler(SimpleHTTPRequestHandler):
         return super().translate_path(path)
 
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-os.chdir(SISKO_ROOT)
+os.chdir(ADAMA_ROOT)
 server = HTTPServer(('localhost', port), Handler)
 url = f'http://localhost:{port}'
 print(f'ADAMA dashboard -> {url}')
