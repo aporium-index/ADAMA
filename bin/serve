@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Serve the sisko dashboard. Opens browser automatically.
+
+Usage:
+  ./bin/serve            # serve on port 8080, open browser
+  ./bin/serve 3000       # serve on custom port
+"""
+
+import os
+import sys
+import webbrowser
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SISKO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+
+os.chdir(SISKO_ROOT)
+
+server = HTTPServer(('localhost', port), SimpleHTTPRequestHandler)
+url = f'http://localhost:{port}'
+print(f'sisko dashboard → {url}')
+webbrowser.open(url)
+server.serve_forever()

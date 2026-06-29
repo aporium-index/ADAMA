@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sisko dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; background: #0d1117; color: #c9d1d9; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 13px; margin-bottom: 24px; }
+  a { color: #58a6ff; text-decoration: none; cursor: pointer; }
+  a:hover { text-decoration: underline; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #21262d; color: #8b949e; font-weight: 500; font-size: 12px; text-transform: uppercase; cursor: pointer; user-select: none; }
+  th:hover { color: #c9d1d9; }
+  td { padding: 10px 12px; border-bottom: 1px solid #21262d; }
+  tr:hover { background: #161b22; }
+  .focus { color: #8b949e; font-size: 13px; max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .badge-blue { background: #1f6feb33; color: #58a6ff; }
+  .badge-green { background: #23863633; color: #3fb950; }
+  .badge-yellow { background: #9e6a0333; color: #d2991d; }
+  .badge-red { background: #da363333; color: #f85149; }
+  .badge-gray { background: #30363d; color: #8b949e; }
+  .badge-purple { background: #a371f733; color: #a371f7; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .dot-green { background: #3fb950; }
+  .dot-yellow { background: #d2991d; }
+  .dot-red { background: #f85149; }
+  .dot-gray { background: #6b7280; }
+  .stale { color: #d2991d; cursor: help; }
+  .stats { display: flex; gap: 24px; margin: 24px 0; flex-wrap: wrap; }
+  .stat { background: #161b22; border: 1px solid #21262d; border-radius: 6px; padding: 12px 16px; min-width: 100px; }
+  .stat-label { font-size: 11px; color: #8b949e; text-transform: uppercase; }
+  .stat-value { font-size: 24px; font-weight: 600; margin-top: 4px; }
+  .section-title { font-size: 16px; margin: 28px 0 12px; color: #f0f6fc; }
+  .blocker { color: #f85149; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #21262d; color: #484f58; font-size: 12px; }
+  .loading { padding: 40px; text-align: center; color: #8b949e; }
+</style>
+</head>
+<body>
+<h1>sisko dashboard</h1>
+<p class="subtitle">Live — reads outpost state files on every load.</p>
+
+<div class="stats" id="stats"></div>
+<div class="section-title">All Outposts</div>
+<div id="table-container"><p class="loading">loading outposts&hellip;</p></div>
+<div class="section-title" id="blockers-section" style="display:none">Blockers</div>
+<div id="blockers"></div>
+<p class="footer">sisko control plane &middot; live view &middot; <code>bin/serve</code></p>
+
+<script>
+const OUTPOSTS_DIR = 'outposts';
+
+const STATE_BADGES = {
+  operational: '<span class="badge badge-blue">operational</span>',
+  dormant: '<span class="badge badge-gray">dormant</span>',
+  commissioning: '<span class="badge badge-purple">commissioning</span>',
+  transiting: '<span class="badge badge-yellow">transiting</span>',
+  decommissioned: '<span class="badge badge-gray">decommissioned</span>',
+  destroyed: '<span class="badge badge-red">destroyed</span>',
+};
+
+const CONDITION_DOTS = {
+  'condition-green': '<span class="dot dot-green"></span> condition-green',
+  'yellow-alert': '<span class="dot dot-yellow"></span> yellow-alert',
+  'red-alert': '<span class="dot dot-red"></span> red-alert',
+  adrift: '<span class="dot dot-gray"></span> adrift',
+};
+
+function parseFrontmatter(text) {
+  const m = text.match(/^---\s*\n(.*?)\n---/s);
+  if (!m) return {};
+  const data = {};
+  for (const line of m[1].split('\n')) {
+    const colon = line.indexOf(':');
+    if (colon === -1 || line.trim().startsWith('#')) continue;
+    const key = line.slice(0, colon).trim();
+    let val = line.slice(colon + 1).trim();
+    if (val.startsWith('[') && val.endsWith(']')) {
+      val = val.slice(1, -1).split(',').map(v => v.trim().replace(/['"]/g, '')).filter(Boolean);
+    } else if (val === 'true') val = true;
+    else if (val === 'false') val = false;
+    else if (val === 'null') val = null;
+    else val = val.replace(/^['"]|['"]$/g, '');
+    data[key] = val;
+  }
+  return data;
+}
+
+function firstBodyLine(text) {
+  const parts = text.split(/^---$/m);
+  if (parts.length < 3) return '\u2014';
+  const body = parts.slice(2).join('---').trim();
+  for (const line of body.split('\n')) {
+    const s = line.trim();
+    if (s && !s.startsWith('#')) return s.slice(0, 140);
+  }
+  return '\u2014';
+}
+
+function daysAgo(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  return Math.floor((now - d) / (1000 * 60 * 60 * 24));
+}
+
+function conditionHtml(condition, state) {
+  if (state !== 'operational') return '\u2014';
+  return CONDITION_DOTS[condition] || condition || '\u2014';
+}
+
+function staleIndicator(staleDays, threshold) {
+  if (staleDays === null) return '';
+  if (staleDays > threshold) return ` <span class="stale" title="Stale: ${staleDays} days">\u26A0</span>`;
+  return '';
+}
+
+async function loadOutpost(slug) {
+  const resp = await fetch(`${OUTPOSTS_DIR}/${slug}-state.md`);
+  if (!resp.ok) return null;
+  const text = await resp.text();
+  const data = parseFrontmatter(text);
+  data._slug = slug;
+  data._focus = firstBodyLine(text);
+  data._staleDays = daysAgo(data.last_active);
+  data._blockers = extractBlockers(text);
+  return data;
+}
+
+function extractBlockers(text) {
+  const parts = text.split(/^---$/m);
+  if (parts.length < 3) return [];
+  const body = parts.slice(2).join('---');
+  const m = body.match(/^## Blockers\s*\n((?:\s*[-*]\s+.+\n?)*)/m);
+  if (!m) return [];
+  return m[1].split('\n').filter(l => l.trim().startsWith('-') || l.trim().startsWith('*')).map(l => l.replace(/^[-*]\s*/, '').trim());
+}
+
+async function loadAll() {
+  const slugs = [
+    'sisko', '_aporium', 'basicly', 'jamboree', 'quotaz',
+    'prosodymaker', 'mac-optimization-audit', 'ml-feedback-program'
+  ];
+
+  const outposts = [];
+  for (const slug of slugs) {
+    const data = await loadOutpost(slug);
+    if (data) outposts.push(data);
+  }
+
+  const tierOrder = { 'tier-0': 0, 'tier-1': 1, 'tier-2': 2, 'tier-3': 3 };
+  const priOrder = { P1: 0, P2: 1, P3: 2, P4: 3 };
+  const stateOrder = { operational: 0, transiting: 1, commissioning: 2, dormant: 3, decommissioned: 4, destroyed: 5 };
+
+  outposts.sort((a, b) => {
+    return (tierOrder[a.criticality] ?? 99) - (tierOrder[b.criticality] ?? 99) ||
+           (priOrder[a.priority] ?? 99) - (priOrder[b.priority] ?? 99) ||
+           (stateOrder[a.state] ?? 99) - (stateOrder[b.state] ?? 99) ||
+           (a.name || a._slug).localeCompare(b.name || b._slug);
+  });
+
+  render(outposts);
+}
+
+function render(outposts) {
+  let green = 0, yellow = 0, red = 0, adrift = 0;
+  let operational = 0, dormant = 0;
+  let agents = 0, gitignore = 0;
+
+  const rows = outposts.map(o => {
+    const state = o.state || 'unknown';
+    const condition = o.condition;
+    const priority = o.priority || '\u2014';
+    const tier = o.criticality || '\u2014';
+    const lastActive = o.last_active || '\u2014';
+    const threshold = parseInt(o.stale_threshold_days) || 14;
+    const staleHtml = staleIndicator(o._staleDays, threshold);
+    const condHtml = conditionHtml(condition, state);
+    const slug = o._slug;
+
+    if (state === 'operational') operational++;
+    if (state === 'dormant') dormant++;
+    if (condition === 'condition-green') green++;
+    if (condition === 'yellow-alert') yellow++;
+    if (condition === 'red-alert') red++;
+    if (condition === 'adrift') adrift++;
+    if (o.has_agents_md) agents++;
+    if (o.has_gitignore) gitignore++;
+
+    return `<tr>
+      <td><a href="outposts/${slug}-state.md">${o.name || slug}</a></td>
+      <td>${STATE_BADGES[state] || state}</td>
+      <td>${condHtml}</td>
+      <td>${priority}</td>
+      <td>${tier}</td>
+      <td>${lastActive}${staleHtml}</td>
+      <td class="focus">${o._focus}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('table-container').innerHTML = `<table>
+    <thead><tr><th>Outpost</th><th>State</th><th>Condition</th><th>Priority</th><th>Tier</th><th>Active</th><th>Focus</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  const total = outposts.length;
+  const compliance = agents + gitignore;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Outposts</div><div class="stat-value">${total}</div></div>
+    <div class="stat"><div class="stat-label">Operational</div><div class="stat-value" style="color:#3fb950">${operational}</div></div>
+    <div class="stat"><div class="stat-label">Dormant</div><div class="stat-value" style="color:#8b949e">${dormant}</div></div>
+    <div class="stat"><div class="stat-label">Compliance</div><div class="stat-value">${compliance}/${total * 2}</div></div>
+    <div class="stat"><div class="stat-label">Green</div><div class="stat-value" style="color:#3fb950">${green}</div></div>
+    <div class="stat"><div class="stat-label">Alerts</div><div class="stat-value" style="color:#d2991d">${yellow}</div></div>
+  `;
+
+  const blockers = outposts.flatMap(o => o._blockers.map(b => ({ name: o.name || o._slug, blocker: b })));
+  if (blockers.length) {
+    document.getElementById('blockers-section').style.display = '';
+    document.getElementById('blockers').innerHTML = blockers.map(b =>
+      `<p><strong>${b.name}:</strong> ${b.blocker}</p>`
+    ).join('');
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
